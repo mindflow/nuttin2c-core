@@ -1,9 +1,9 @@
 {
   "type": "module",
-  "name": "nuttin2c_core_v1",
+  "name": "nuttin2c-core_v1",
   "version": "1.0.0",
   "description": "nuttin2c Core",
-  "main": "./dist/jsm/nuttin2c_core_v1.js",
+  "main": "./dist/jsm/nuttin2c-core_v1.js",
   "scripts": {
     "build": "node ./node_modules/rollup/dist/bin/rollup -c",
     "watch": "node ./node_modules/rollup/dist/bin/rollup -c --watch"

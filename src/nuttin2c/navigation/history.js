@@ -1,5 +1,8 @@
 import { ContainerUrl } from "containerbridge_v1";
 import { UrlUtils } from "../util/urlUtils.js";
+import { Logger } from "coreutil_v1";
+
+const LOG = new Logger("History");
 
 export class History {
 

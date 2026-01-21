@@ -86,9 +86,9 @@ export class Application extends ModuleRunner {
      */
     update(event) {
         const url = History.currentUrl();
-
+        LOG.info("Application: update to " + url.toString());
         if (this.activeModule && this.activeModule.trailMap && StringUtils.startsWith(url.anchor, this.activeModule.trailMap.trail)) {
-            TrailProcessor.triggerFunctionsAlongAnchor(url, this.activeModule, this.activeModule.trailMap);
+            TrailProcessor.clientNavigate(url, this.activeModule, this.activeModule.trailMap);
             return;
         }
         this.runModule(url);
@@ -106,7 +106,7 @@ export class Application extends ModuleRunner {
             this.activeModule.url = url;
             this.activeModule.load();
             if (this.activeModule.trailMap) {
-                TrailProcessor.triggerFunctionsAlongAnchor(url, this.activeModule, this.activeModule.trailMap);
+                TrailProcessor.clientNavigate(url, this.activeModule, this.activeModule.trailMap);
             }
             return this.activeModule;
         } catch(error) {

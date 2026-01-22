@@ -24,7 +24,6 @@ export class TrailProcessor {
      * @returns {any}
      */
     static uiNavigate(fun, currentObject, trailNode, includeWaypoints = false) {
-        // Url must be recorded in browser history first, then functions along trail triggered
         const trailNodesPath = TrailProcessor.nodesPathByFunction(fun, trailNode);
 
         let response = null;
@@ -77,7 +76,6 @@ export class TrailProcessor {
      * @returns {any}
      */
     static clientNavigate(url, currentObject, trailNode) {
-        // Url already updated in browser, just need to trigger functions
         const trailNodesPath = TrailProcessor.nodesPathByTrail(url.anchor, trailNode);
 
         let response = null;

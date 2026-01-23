@@ -114,6 +114,9 @@ export class BaseElement extends MappedContainerElement {
     }
 
     set(input) {
+        if (null === input || undefined === input) {
+            throw new Error("No input provided to set the element");
+        }
         if(!this.containerElement.parentNode){
             console.error("The element has no parent, can not swap it for value");
             return;
@@ -168,11 +171,17 @@ export class BaseElement extends MappedContainerElement {
     }
 
     setChild(input) {
+        if (null === input || undefined === input) {
+            throw new Error("No input provided to set the element");
+        }
         this.clear();
         this.addChild(input);
     }
 
     addChild(input) {
+        if (null === input || undefined === input) {
+            throw new Error("No input provided to set the element");
+        }
         if (input.containerElement !== undefined && input.containerElement !== null){
             this.containerElement.appendChild(input.containerElement);
             return;
@@ -199,6 +208,9 @@ export class BaseElement extends MappedContainerElement {
     }
 
     prependChild(input) {
+        if (null === input || undefined === input) {
+            throw new Error("No input provided to set the element");
+        }
         if(this.containerElement.firstChild === null) {
             this.addChild(input);
         }

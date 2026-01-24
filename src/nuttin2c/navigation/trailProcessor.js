@@ -20,10 +20,11 @@ export class TrailProcessor {
      * @param {function} fun 
      * @param {any} currentObject
      * @param {TrailNode} trailNode 
+     * @param {boolean} replaceCurrentUrl
      * @param {boolean} includeWaypoints
      * @returns {any}
      */
-    static uiNavigate(fun, currentObject, trailNode, includeWaypoints = false) {
+    static uiNavigate(fun, currentObject, trailNode, replaceCurrentUrl = false, includeWaypoints = false) {
         const trailNodesPath = TrailProcessor.nodesPathByFunction(fun, trailNode);
 
         let response = null;
@@ -55,7 +56,12 @@ export class TrailProcessor {
 
         if (!includeWaypoints) {
             const url = UrlBuilder.create().withUrl(ContainerUrl.currentUrl()).withAnchor(currentTrail).build();
-            History.pushUrl(url, url.toString(), null);
+            if (replaceCurrentUrl) {
+                History.replaceUrl(url, url.toString(), null);
+            } else {    
+                History.pushUrl(url, url.toString(), null);
+            }
+            
         }
 
         return response;

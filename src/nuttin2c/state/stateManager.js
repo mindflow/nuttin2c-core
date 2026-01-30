@@ -11,8 +11,8 @@ export class StateManager {
         /** @type {Map<String, T>} */
         this.domainMap = new Map();
 
-        /** @type {T2} */
-        this.error = null;
+        /** @type {Map<String, T2>} */
+        this.errorMap = new Map();
 
         /** @type {Map<String, Array<Method>} */
         this.domainListeners = new Map();
@@ -81,7 +81,7 @@ export class StateManager {
 
     async updateError(error, key = "__DEFAULT__") {
         this.initialized = true;
-        this.error = error;
+        this.errorMap.set(key, error);
         this.signalErrorChange(error, key);
     }
 
@@ -101,8 +101,8 @@ export class StateManager {
         object = this.createProxy(object, key, this);
         this.domainMap.set(key, object);
         this.initialized = true;
-        if (this.error != null) {
-            this.error = null;
+        if (this.errorMap.get(key) != null) {
+            this.errorMap.delete(key);
             this.signalErrorChange(null, key);
         }
         this.signalDomainChange(object, key);
@@ -112,6 +112,8 @@ export class StateManager {
     async delete(key = "__DEFAULT__") {
         this.domainMap.delete(key);
         this.domainListeners.delete(key);
+        this.errorMap.delete(key);
+        this.errorListeners.delete(key);
         this.initialized = true;
         this.signalDomainChange(null, key);
     }
@@ -124,6 +126,8 @@ export class StateManager {
         this.signalDomainChange(null, "__ANY__");
         this.domainMap.clear();
         this.domainListeners.clear();
+        this.errorMap.clear();
+        this.errorListeners.clear();
         this.initialized = false;
     }
 

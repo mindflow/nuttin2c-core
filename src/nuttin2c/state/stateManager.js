@@ -100,6 +100,7 @@ export class StateManager {
         }
         object = this.createProxy(object, key, this);
         this.domainMap.set(key, object);
+        
         this.initialized = true;
         if (this.errorMap.get(key) != null) {
             this.errorMap.delete(key);
@@ -110,11 +111,15 @@ export class StateManager {
     }
 
     async delete(key = "__DEFAULT__") {
+
         this.domainMap.delete(key);
         this.domainListeners.delete(key);
+
         this.errorMap.delete(key);
         this.errorListeners.delete(key);
+
         this.initialized = true;
+
         this.signalDomainChange(null, key);
     }
 
@@ -124,10 +129,13 @@ export class StateManager {
             this.signalDomainChange(null, key);
         }
         this.signalDomainChange(null, "__ANY__");
+
         this.domainMap.clear();
         this.domainListeners.clear();
+
         this.errorMap.clear();
         this.errorListeners.clear();
+
         this.initialized = false;
     }
 

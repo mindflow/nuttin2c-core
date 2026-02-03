@@ -42,7 +42,7 @@ export class InputElementDataBinding {
         field.listenTo("keyup", puller, this);
 
         const pusher = () => {
-            var modelValue = PropertyAccessor.getValue(this.model, field.name);
+            let modelValue = PropertyAccessor.getValue(this.model, field.name);
             if (modelValue !== field.value) {
                 field.value = modelValue;
             }
@@ -61,10 +61,12 @@ export class InputElementDataBinding {
         this.pullers.add(puller);
         this.pushers.add(pusher);
 
-        if (field.value) {
-            puller.call();
-        } else {
+        let modelValue = PropertyAccessor.getValue(this.model, field.name);
+
+        if (modelValue) {
             pusher.call();
+        } else if (field.value) {
+            puller.call();
         }
 
         return this;

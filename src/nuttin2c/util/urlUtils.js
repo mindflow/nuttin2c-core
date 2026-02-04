@@ -17,9 +17,10 @@ export class UrlUtils {
         const port =         UrlUtils.parsePort(urlString);
         const pathsList =    UrlUtils.parsePathArray(urlString);
         const queryParam =   UrlUtils.parseQueryParam(urlString);
-        const bookmark =     UrlUtils.parseBookmark(urlString);
+        const anchor =       UrlUtils.parseAnchor(urlString);
+        const anchorParams = UrlUtils.parseAnchorParams(urlString);
 
-        return new Url(protocol, host, port, pathsList, queryParam, bookmark);
+        return new Url(protocol, host, port, pathsList, queryParam, anchor, anchorParams);
     }
 
     /**
@@ -93,10 +94,11 @@ export class UrlUtils {
         if (urlString.indexOf("/") !== -1) {
             urlString = urlString.substring(urlString.indexOf("/"));
         }
+        if (urlString.indexOf("#") !== -1) {
+            urlString = urlString.split("#")[0];
+        }
         if (urlString.indexOf("?") !== -1) {
             urlString = urlString.split("?")[0];
-        } else if (urlString.indexOf("#") !== -1) {
-            urlString = urlString.split("#")[0];
         }
         if (urlString.startsWith("/")) {
             urlString = urlString.substring(1);
@@ -123,13 +125,19 @@ export class UrlUtils {
         if (urlString.indexOf("/") !== -1) {
             urlString = urlString.substring(urlString.indexOf("/"));
         }
+        if (urlString.indexOf("#") !== -1) {
+            urlString = urlString.split("#")[0];
+        }
         if (urlString.indexOf("?") === -1) {
             return null;
         }
-        let queryParam = urlString.split("?")[1];
-        if (queryParam.indexOf("#") !== -1) {
-            queryParam = queryParam.split("#")[0];
+        if (urlString.indexOf("?") !== -1) {
+            urlString = urlString.split("?")[1];
         }
+        if (urlString === null || urlString.length === 0) {
+            return null;
+        }
+        let queryParam = urlString;
         const paramMap = new Map();
         const paramPairs = queryParam.split("&");
         paramPairs.forEach((pair) => {
@@ -152,7 +160,7 @@ export class UrlUtils {
         return paramMap;
     }
 
-    static parseBookmark(urlString) {
+    static parseAnchor(urlString) {
         if (urlString === null) { return null; }
         if (urlString.indexOf("://") !== -1) {
             urlString = urlString.split("://")[1];
@@ -160,166 +168,56 @@ export class UrlUtils {
         if (urlString.indexOf("/") !== -1) {
             urlString = urlString.substring(urlString.indexOf("/"));
         }
+        if (urlString.indexOf("#") === -1) {
+            return null;
+        }
+        if (urlString.indexOf("#") !== -1) {
+            urlString = urlString.split("#")[1];
+        }        
         if (urlString.indexOf("?") !== -1) {
-            urlString = urlString.split("?")[1];
+            urlString = urlString.split("?")[0];
+        }
+        let anchor = urlString;
+        return anchor;
+    }
+
+    static parseAnchorParams(urlString) {
+        if (urlString === null) { return null; }
+        if (urlString.indexOf("://") !== -1) {
+            urlString = urlString.split("://")[1];
+        }
+        if (urlString.indexOf("/") !== -1) {
+            urlString = urlString.substring(urlString.indexOf("/"));
         }
         if (urlString.indexOf("#") === -1) {
             return null;
         }
-        let bookmark = urlString.split("#")[1];
-        return bookmark;
-    }
-
-    static determineProtocol(remaining){
-        let value = remaining["string"];
-
-        if (!value) {
-            return null;
+        if (urlString.indexOf("#") !== -1) {
+            urlString = urlString.split("#")[1];
         }
-
-        let protocol = value;
-
-        if (value.indexOf("//") === -1){
-            // No '//' to indicate protocol 
-            return null;
-        }
-
-        let parts = value.split("//");
-        if(parts[0].indexOf("/") !== -1){
-            // slash should not be in protocol
-            return null;
-        }
-
-        protocol = parts[0];
-        if (parts.length == 1){
-            remaining["string"] = null;
+        if (urlString.indexOf("?") !== -1) {
+            urlString = urlString.split("?")[1];
         } else {
-            remaining["string"] = value.replace(parts[0] + "//", "");
-        }
-
-        return protocol;
-    }
-
-    static determineHostAndPort(remaining){
-        let value = remaining["string"];
-
-        if (!value) {
             return null;
         }
-
-        let hostAndPort = value;
-        let remainingString = null;
-
-        if (hostAndPort.indexOf("/") !== -1) {
-            // Host comes before the first '/'
-            hostAndPort = hostAndPort.split("/")[0];
-            remainingString = value.replace(hostAndPort + "/", "");
-        }
-
-        remaining["string"] = remainingString;
-        return hostAndPort;
-    }
-
-    static extractHost(hostAndPort){
-        if (!hostAndPort) {
-            return null;
-        }
-        if(hostAndPort.indexOf(":") === -1){
-            return hostAndPort;
-        }
-        return hostAndPort.split(":")[0];
-    }
-
-    static extractPort(hostAndPort){
-        if (!hostAndPort) {
-            return null;
-        }
-        if(hostAndPort.indexOf(":") === -1){
-            return null;
-        }
-        return hostAndPort.split(":")[1];
-    }
-
-    static determinePath(remaining){
-        let value = remaining["string"];
-
-        if (!value) {
-            return new List();
-        }
-
-        let path = value;
-
-        if (path.indexOf("?") !== -1){
-            let parts = path.split("?");
-            if (parts.length > 1) {
-                remaining["string"] = path.substring(path.indexOf("?"));
+        let anchorParamString = urlString;
+        const paramMap = new Map();
+        const paramPairs = anchorParamString.split("&");
+        paramPairs.forEach((pair) => {
+            let key = null;
+            let value = null;
+            if (pair.indexOf("=") !== -1) {
+                key = pair.split("=")[0];
+                value = pair.split("=")[1];
+            } else {
+                key = pair;
+                value = null;
             }
-            path = parts[0];
-
-        } else if (path.indexOf("#") !== -1){
-            let parts = path.split("#");
-            if (parts.length > 1) {
-                remaining["string"] = path.substring(path.indexOf("#"));
-            }
-            path = parts[0];
-
-        } else {
-            remaining["string"] = null;
-        }
-
-        if (path.startsWith("/")) {
-            path = value.substring(1);
-        }
-
-        const rawPathPartList = new List(path.split("/"));
-
-        const pathValueList = new List();
-        rawPathPartList.forEach((value) => {
-            pathValueList.add(decodeURI(value));
-            return true;
-        }, this);
-
-        return pathValueList;
-    }
-
-    static determineBookmark(remaining){
-        let value = remaining["string"];
-
-        if (!value) {
-            remaining["string"] = null;
-            return null;
-        }
-
-        let bookmark = value;
-        if(value.indexOf("#") !== -1) {
-            bookmark = value.substring(value.indexOf("#")+1);
-            remaining["string"] = null;
-        }
-        return bookmark;
-    }
-
-    static determineQueryParam(remaining){
-        let value = remaining["string"];
-
-        if (!value) {
-            return null;
-        }
-
-        let queryParam = value;
-        if(value.indexOf("?") !== -1) {
-            queryParam = value.substring(value.indexOf("?")+1);
-            remaining["string"] = null;
-            if (queryParam.indexOf("#") !== -1) {
-                queryParam = queryParam.substring(0, queryParam.indexOf("#"));
-                remaining["string"] = queryParam.substring(queryParam.indexOf("#"));
-            }
-        } else {
-            if (queryParam.indexOf("#") !== -1) {
-                remaining["string"] = queryParam.substring(queryParam.indexOf("#"));
-            }
-            return null;
-        }
-        return queryParam;
+            key = decodeURI(key);
+            value = decodeURI(value);
+            paramMap.set(key, value);
+        });
+        return paramMap;
     }
 
 

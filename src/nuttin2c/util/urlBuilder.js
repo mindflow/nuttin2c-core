@@ -23,6 +23,9 @@ export class UrlBuilder {
 
         /** @type {String} */
         this.anchor = null;
+
+        /** @type {Map<String, Array<String>>} */
+        this.anchorParameterMap = null;
     }
 
     /**
@@ -73,11 +76,11 @@ export class UrlBuilder {
         this.withPathOfUrl(url);
         this.queryParameterMap = url.queryParamMap;
         this.anchor = url.anchor;
+        this.anchorParameterMap = url.anchorParamMap;
         return this;
     }
 
     /**
-     * 
      * @param {string} protocol 
      * @returns {UrlBuilder}
      */
@@ -89,7 +92,7 @@ export class UrlBuilder {
     /**
      * 
      * @param {Number} port 
-     * @returns 
+     * @returns {UrlBuilder}
      */
     withPort(port) {
         this.port = port;
@@ -119,17 +122,29 @@ export class UrlBuilder {
      * @returns {UrlBuilder}
      */
     withAnchor(anchor) {
+        // Reset anchor parameters when setting anchor directly
+        this.anchorParameterMap = null;
         this.anchor = anchor;
         return this;
     }
 
+    withAnchorParamString(key, value) {
+        if (this.anchorParameterMap == null) {
+            this.anchorParameterMap = new Map();
+        }
+        this.anchorParameterMap.set(key, value);
+        return this;
+    }
+
     /**
-     * 
      * @param {String} key 
      * @param {String} value 
-     * @returns 
+     * @returns {UrlBuilder}
      */
     withQueryParamString(key, value) {
+        if (this.queryParameterMap == null) {
+            this.queryParameterMap = new Map();
+        }
         this.queryParameterMap.set(key, [value]);
         return this;
     }
@@ -141,6 +156,9 @@ export class UrlBuilder {
      * @returns 
      */
     withQueryParamArray(key, valueArray) {
+        if (this.queryParameterMap == null) {
+            this.queryParameterMap = new Map();
+        }
         this.queryParameterMap.set(key, valueArray);
         return this;
     }
@@ -158,6 +176,6 @@ export class UrlBuilder {
     }
 
     build() {
-        return new Url(this.protocol, this.host, this.port, this.pathArray, this.queryParameterMap, this.anchor);
+        return new Url(this.protocol, this.host, this.port, this.pathArray, this.queryParameterMap, this.anchor, this.anchorParameterMap);
     }
 }

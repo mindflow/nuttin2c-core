@@ -10,8 +10,9 @@ export class Url{
      * @param {Array<String>} pathValueArray 
      * @param {Map<String, Array<String>>} queryParamMap
      * @param {String} anchor 
+     * @param {Map<String, String>} anchorParamMap
      */
-    constructor(protocol, host, port = null, pathValueArray = null, queryParamMap = null, anchor = null){
+    constructor(protocol, host, port = null, pathValueArray = null, queryParamMap = null, anchor = null, anchorParamMap = null) {
 
         /** @type {String} */
         this.protocolString = protocol;
@@ -28,14 +29,22 @@ export class Url{
         /** @type {Map<String, Array<String>>} */
         this.queryParamMap = queryParamMap;
 
+        /** @type {Map<String, String>} */
+        this.anchorParamMap = anchorParamMap;
+
         /** @type {String} */
         this.anchorString = anchor;
         
         if (!this.pathValueArray) {
             this.pathValueArray = new Array();
         }
+
         if (!this.queryParamMap) {
             this.queryParamMap = new Map();
+        }
+
+        if (!this.anchorParamMap) {
+            this.anchorParamMap = new Map();
         }
     }
 
@@ -125,8 +134,30 @@ export class Url{
             }
         }
 
+        let hashAdded = false;
         if(this.anchor !== null) {
+            hashAdded = true;
             value = value + "#" + this.anchor;
+        }
+
+        if (this.anchorParamMap.size > 0) {
+            const anchorParamStrings = new Array();
+
+            this.anchorParamMap.forEach((value, key) => {
+                if (value !== null) {
+                    anchorParamStrings.push(key + "=" + value);
+                }
+            });
+
+            if (anchorParamStrings.length == 0) {
+                return value;
+            }
+            
+            if (!hashAdded) {
+                value = value + "#";
+            }
+            value = value + "?" + anchorParamStrings.join("&");
+
         }
         return value;
     }

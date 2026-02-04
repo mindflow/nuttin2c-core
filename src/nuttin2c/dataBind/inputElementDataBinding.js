@@ -20,17 +20,9 @@ export class InputElementDataBinding {
      * 
      * @param {AbstractInputElement} field 
      */
-    and(field) {
-        return this.to(field);
-    }
-
-    /**
-     * 
-     * @param {AbstractInputElement} field 
-     */
     to(field) {
         const puller = () => {
-            let modelValue = PropertyAccessor.getValue(this.model, field.name);
+            const modelValue = PropertyAccessor.getValue(this.model, field.name);
             if (modelValue !== field.value) {
                 PropertyAccessor.setValue(this.model, field.name, field.value);
             }
@@ -42,7 +34,7 @@ export class InputElementDataBinding {
         field.listenTo("keyup", puller, this);
 
         const pusher = () => {
-            let modelValue = PropertyAccessor.getValue(this.model, field.name);
+            const modelValue = PropertyAccessor.getValue(this.model, field.name);
             if (modelValue !== field.value) {
                 field.value = modelValue;
             }
@@ -70,6 +62,14 @@ export class InputElementDataBinding {
         }
 
         return this;
+    }
+
+    /**
+     * 
+     * @param {AbstractInputElement} field 
+     */
+    and(field) {
+        return this.to(field);
     }
 
     pull() {

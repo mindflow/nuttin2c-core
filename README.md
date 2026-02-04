@@ -31,23 +31,34 @@ Build outputs:
 
 ### 1) Minimal module + app bootstrap
 
+```html
+<html>
+  <head>
+    
+  </head>
+  <body id="body">
+
+  <body>
+  <script type="module" charset="utf-8" src="/moduleLoader.js"></script>
+</html>
+```
+
 ```js
-import { Application } from "nuttin2c-core_v1";
-import { DiModuleLoader } from "nuttin2c-core_v1";
-import { Module } from "nuttin2c-core_v1";
-import { CanvasRoot } from "nuttin2c-core_v1";
-import { ComponentBuilder } from "nuttin2c-core_v1";
-import { UniqueIdRegistry } from "nuttin2c-core_v1";
-import { MindiConfig, SingletonConfig } from "mindi_v1";
+import { Application } from "nuttin2c-core_v1.js";
+import { DiModuleLoader } from "nuttin2c-core_v1.js";
+import { Module } from "nuttin2c-core_v1.js";
+import { CanvasRoot } from "nuttin2c-core_v1.js";
+import { ComponentBuilder } from "nuttin2c-core_v1.js";
+import { UniqueIdRegistry } from "nuttin2c-core_v1.js";
 
 class HelloModule extends Module {
   async load() {
     const builder = ComponentBuilder.create(UniqueIdRegistry.instance());
     const component = builder
-      .root("div", "id=hello-root")
+      .root("div")
       .open()
         .node("h1")
-        .text("Hello Nuttin2c")
+        .text("Nuttin2c here, move along")
       .close()
       .build();
 
@@ -55,6 +66,11 @@ class HelloModule extends Module {
     return this;
   }
 }
+```
+
+```js
+import { MindiConfig, SingletonConfig } from "mindi_v1";
+import { UniqueIdRegistry } from "nuttin2c-core_v1.js";
 
 const config = new MindiConfig().addAllTypeConfig([
   SingletonConfig.unnamed(UniqueIdRegistry)
@@ -122,7 +138,7 @@ const model = ProxyObjectFactory.createProxyObject({ name: "" });
 const input = HTML.custom("input");
 input.setAttributeValue("name", "name");
 
-InputElementDataBinding.link(model).and(input);
+InputElementDataBinding.link(model).to(input);
 ```
 
 ## Notes

@@ -134,7 +134,7 @@ export class CanvasRoot {
             listener.call(event);
         });
         destroyFunctions.push(
-            ContainerWindow.addEventListener("click", callIfNotContains)
+            ContainerWindow.addEventListener("mousedown", callIfNotContains)
         );
 
         return () => {

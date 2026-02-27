@@ -1,6 +1,7 @@
 import { StringUtils } from "coreutil_v1";
 import { Url } from "./url.js";
 import { UrlUtils } from "./urlUtils.js";
+import { ContainerUrl } from "containerbridge_v1";
 
 export class UrlBuilder {
 
@@ -34,6 +35,10 @@ export class UrlBuilder {
      */
     static create() {
         return new UrlBuilder();
+    }
+
+    withCurrentUrl() {
+        return this.withUrl(ContainerUrl.currentUrl());
     }
 
     /**

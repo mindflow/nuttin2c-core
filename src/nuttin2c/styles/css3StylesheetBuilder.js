@@ -37,14 +37,40 @@ export class Css3StylesheetBuilder {
      * @param {String} maxWidth 
      * @returns {Css3StylesheetBuilder}
      */
-    media(minWidth, maxWidth) {
+    media(minWidth, maxWidth, pointer = null, hover = null) {
         if (this.stylesheetBuilder.context instanceof StyleSelector) {
             this.stylesheetBuilder.close();
         }
         if (this.stylesheetBuilder.context instanceof StyleMedia) {
             this.stylesheetBuilder.close();
         }
-        const mediaQuery = `@media${minWidth ? ` (min-width: ${minWidth})` : ""}${minWidth && maxWidth ? " and" : ""}${maxWidth ? ` (max-width: ${maxWidth})` : ""}`;
+        
+        let mediaQuery = "@media ";
+        let hasCondition = false;
+
+        if (minWidth) {
+            mediaQuery += `(min-width: ${minWidth})`;
+            hasCondition = true;
+        }
+
+        if (maxWidth) {
+            if (hasCondition) { mediaQuery += " and "; }
+            mediaQuery += `(max-width: ${maxWidth})`;
+            hasCondition = true;
+        }
+
+        if (pointer) {
+            if (hasCondition) { mediaQuery += " and "; }
+            mediaQuery += `(pointer: ${pointer})`;
+            hasCondition = true;
+        }
+
+        if (hover) {
+            if (hasCondition) { mediaQuery += " and "; }
+            mediaQuery += `(hover: ${hover})`;
+            hasCondition = true;
+        }
+
         this.stylesheetBuilder.media(mediaQuery);
         this.stylesheetBuilder.open();
         return this;
@@ -105,6 +131,15 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} zIndex 
+     * @returns {Css3StylesheetBuilder}
+     */
+    zIndex(zIndex) {
+        this.stylesheetBuilder.style("z-index", zIndex);
+        return this;
+    }
+
+    /**
      * @param {String} lineHeight
      * @returns {Css3StylesheetBuilder}
      */
@@ -124,9 +159,54 @@ export class Css3StylesheetBuilder {
     }
 
     /**
-     * @param {String} grow Grows relative to the other flex items in the container when there is extra space. E.g. grow of 1 vs grow of 2, the second item will grow twice as much.
-     * @param {String} shrink Shrinks relative to the other flex items in the container when not enough space. E.g. shrink of 1 vs shrink of 2, the second item will shrink twice as much.
-     * @param {String} basis Initial main size. E.g "100px", "20%", "auto". Default value is "auto", sized according to its content. If "0", sized based on grow and shrink.
+     * @param {String} fontWeight
+     * @returns {Css3StylesheetBuilder}
+     */
+    fontWeight(fontWeight) {
+        this.stylesheetBuilder.style("font-weight", fontWeight);
+        return this;
+    }
+
+    /**
+     * @param {String} fontFamily
+     * @returns {Css3StylesheetBuilder}
+     */
+    fontFamily(fontFamily) {
+        this.stylesheetBuilder.style("font-family", fontFamily);
+        return this;
+    }
+
+    /**
+     * @param {String} color
+     * @returns {Css3StylesheetBuilder}
+     */
+    color(color) {
+        this.stylesheetBuilder.style("color", color);
+        return this;
+    }
+
+    /**
+     * @param {String} textAlign E.g. "left", "right", "center", "justify"
+     * @returns {Css3StylesheetBuilder}
+     */
+    textAlign(textAlign) {
+        this.stylesheetBuilder.style("text-align", textAlign);
+        return this;
+    }
+
+    /**
+     * @param {String} grow 
+     * Grows relative to the other flex items in the container when there is extra space.
+     * E.g. grow of 1 vs grow of 2, the second item will grow twice as much.
+     * 
+     * @param {String} shrink 
+     * Shrinks relative to the other flex items in the container when not enough space.
+     * E.g. shrink of 1 vs shrink of 2, the second item will shrink twice as much.
+     * 
+     * @param {String} basis 
+     * Initial main size. E.g "100px", "20%", "auto". Default value is "auto",
+     * sized according to its content. If "0", sized based on grow and shrink.
+     * 
      * @returns {Css3StylesheetBuilder}
      */
     flex(grow, shrink, basis) {
@@ -141,6 +221,42 @@ export class Css3StylesheetBuilder {
      */
     flexDirection(direction) {
         this.stylesheetBuilder.style("flex-direction", direction);
+        return this;
+    }
+
+    /**
+     * @param {String} rows
+     * @returns {Css3StylesheetBuilder}
+     */
+    gridTemplateColumns(columns) {
+        this.stylesheetBuilder.style("grid-template-columns", columns);
+        return this;
+    }
+
+    /**
+     * @param {String} rows
+     * @returns {Css3StylesheetBuilder}
+     */
+    gridTemplateRows(rows) {
+        this.stylesheetBuilder.style("grid-template-rows", rows);
+        return this;
+    }
+
+    /**
+     * @param {String} column
+     * @returns {Css3StylesheetBuilder}
+     */
+    gridColumn(column) {
+        this.stylesheetBuilder.style("grid-column", column);
+        return this;
+    }
+
+    /**
+     * @param {String} row
+     * @returns {Css3StylesheetBuilder}
+     */
+    gridRow(row) {
+        this.stylesheetBuilder.style("grid-row", row);
         return this;
     }
 
@@ -219,7 +335,7 @@ export class Css3StylesheetBuilder {
      * @returns {Css3StylesheetBuilder}
      */
     padding(top, right, bottom, left) {
-        if (top && !right && !bottom && !left) {
+        if (top && right && bottom && left) {
             const value = `${top} ${right} ${bottom} ${left}`;
             this.stylesheetBuilder.style("padding", value);
             return this;
@@ -240,7 +356,6 @@ export class Css3StylesheetBuilder {
     }
 
     /**
-     * 
      * @param {String} top 
      * @param {String} right 
      * @param {String} bottom 
@@ -248,7 +363,7 @@ export class Css3StylesheetBuilder {
      * @returns {Css3StylesheetBuilder}
      */
     margin(top, right, bottom, left) {
-        if (top && !right && !bottom && !left) {
+        if (top && right && bottom && left) {
             const value = `${top} ${right} ${bottom} ${left}`;
             this.stylesheetBuilder.style("margin", value);
             return this;
@@ -265,6 +380,27 @@ export class Css3StylesheetBuilder {
         if (left) {
             this.stylesheetBuilder.style("margin-left", left);
         }
+        return this;
+    }
+
+    /**
+     * @param {String} width
+     * @param {String} style
+     * @param {String} color
+     * @returns {Css3StylesheetBuilder}
+     */
+    border(width, style, color) {
+        const value = `${width} ${style} ${color}`;
+        this.stylesheetBuilder.style("border", value);
+        return this;
+    }
+
+    /**
+     * @param {String} radius
+     * @returns {Css3StylesheetBuilder}
+     */
+    borderRadius(radius) {
+        this.stylesheetBuilder.style("border-radius", radius);
         return this;
     }
 
@@ -296,6 +432,33 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} backgroundSize
+     * @returns {Css3StylesheetBuilder}
+     */
+    backgroundSize(backgroundSize) {
+        this.stylesheetBuilder.style("background-size", backgroundSize);
+        return this;
+    }
+
+    /**
+     * @param {String} justifyContent E.g. "flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"
+     * @returns {Css3StylesheetBuilder}
+     */
+    justifyContent(justifyContent) {
+        this.stylesheetBuilder.style("justify-content", justifyContent);
+        return this;
+    }
+
+    /**
+     * @param {String} alignSelf E.g. "auto", "stretch", "center", "flex-start", "flex-end", "baseline"
+     * @returns {Css3StylesheetBuilder}
+     */
+    alignSelf(alignSelf) {
+        this.stylesheetBuilder.style("align-self", alignSelf);
+        return this;
+    }
+
+    /**
      * @param {String} overflowX E.g. "visible", "hidden", "scroll", "auto"
      * @param {String} overflowY E.g. "visible", "hidden", "scroll", "auto"
      * @returns {Css3StylesheetBuilder}
@@ -320,15 +483,37 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} top 
+     * @param {String} right 
+     * @param {String} bottom 
+     * @param {String} left
+     * @param {String} color
+     * @returns {Css3StylesheetBuilder}
+     */
+    boxShadow(top, right, bottom, left, color) {
+        const value = `${top} ${right} ${bottom} ${left} ${color}`;
+        this.stylesheetBuilder.style("box-shadow", value);
+        return this;
+    }
+
+    /**
      * @param {String} property
      * @param {String} duration
      * @param {String} timingFunction
      * @returns {Css3StylesheetBuilder}
      */
-
     transition(property, duration, timingFunction) {
         const value = `${property} ${duration} ${timingFunction}`;
         this.stylesheetBuilder.style("transition", value);
+        return this;
+    }
+
+    /**
+     * @param {String} transform 
+     * @returns {Css3StylesheetBuilder}
+     */
+    transform(transform) {
+        this.stylesheetBuilder.style("transform", transform);
         return this;
     }
 

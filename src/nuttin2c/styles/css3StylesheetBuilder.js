@@ -8,14 +8,14 @@ export class Css3StylesheetBuilder {
      * 
      * @returns {Css3StylesheetBuilder}
      */
-    static create() {
-        return new Css3StylesheetBuilder();
+    static create(stylesheetBuilder = StylesheetBuilder.create()) {
+        return new Css3StylesheetBuilder(stylesheetBuilder);
     }
 
-    constructor() {
+    constructor(stylesheetBuilder = StylesheetBuilder.create()) {
 
         /** @type {StylesheetBuilder} */
-        this.stylesheetBuilder = StylesheetBuilder.create();
+        this.stylesheetBuilder = stylesheetBuilder;
 
     }
 
@@ -225,7 +225,16 @@ export class Css3StylesheetBuilder {
     }
 
     /**
-     * @param {String} rows
+     * @param {String} flow E.g. "row nowrap", "column wrap", "row-reverse wrap-reverse"
+     * @returns {Css3StylesheetBuilder}
+     */
+    flexFlow(flow) {
+        this.stylesheetBuilder.style("flex-flow", flow);
+        return this;
+    }
+
+    /**
+     * @param {String} columns
      * @returns {Css3StylesheetBuilder}
      */
     gridTemplateColumns(columns) {
@@ -419,6 +428,15 @@ export class Css3StylesheetBuilder {
      */
     background(background) {
         this.stylesheetBuilder.style("background", background);
+        return this;
+    }
+
+    /**
+     * @param {String} opacity E.g. "0", "0.5", "1"
+     * @returns {Css3StylesheetBuilder}
+     */
+    opacity(opacity) {
+        this.stylesheetBuilder.style("opacity", opacity);
         return this;
     }
 

@@ -77,6 +77,24 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} cursor E.g. "pointer", "default", "text", "move", "not-allowed"
+     * @returns {Css3StylesheetBuilder}
+     */
+    cursor(cursor) {
+        this.stylesheetBuilder.style("cursor", cursor);
+        return this;
+    }
+
+    /**
+     * @param {String} content E.g. "''", "'Hello'", "url(image.png)"
+     * @returns {Css3StylesheetBuilder}
+     */  
+    content(content) {
+        this.stylesheetBuilder.style("content", content);
+        return this;
+    }
+
+    /**
      * @param {String} width 
      * @returns {Css3StylesheetBuilder}
      */
@@ -337,6 +355,15 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} visibility E.g. "visible", "hidden", "collapse"
+     * @returns {Css3StylesheetBuilder}
+     */
+    visibility(visibility) {
+        this.stylesheetBuilder.style("visibility", visibility);
+        return this;
+    }
+
+    /**
      * @param {String} top 
      * @param {String} right 
      * @param {String} bottom 
@@ -459,6 +486,15 @@ export class Css3StylesheetBuilder {
     }
 
     /**
+     * @param {String} backgroundClip E.g. "border-box", "padding-box", "content-box"
+     * @returns {Css3StylesheetBuilder}
+     */
+    backgroundClip(backgroundClip) {
+        this.stylesheetBuilder.style("background-clip", backgroundClip);
+        return this;
+    }
+
+    /**
      * @param {String} justifyContent E.g. "flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"
      * @returns {Css3StylesheetBuilder}
      */
@@ -501,28 +537,44 @@ export class Css3StylesheetBuilder {
     }
 
     /**
-     * @param {String} top 
-     * @param {String} right 
-     * @param {String} bottom 
-     * @param {String} left
+     * @param {String} offsetX 
+     * @param {String} offsetY 
+     * @param {String} blurRadius
+     * @param {String} spreadRadius
      * @param {String} color
      * @returns {Css3StylesheetBuilder}
      */
-    boxShadow(top, right, bottom, left, color) {
-        const value = `${top} ${right} ${bottom} ${left} ${color}`;
-        this.stylesheetBuilder.style("box-shadow", value);
+    boxShadow(offsetX, offsetY, blurRadius, spreadRadius, color) {
+        if (blurRadius && spreadRadius) {
+            const value = `${offsetX} ${offsetY} ${blurRadius} ${spreadRadius} ${color}`;
+            this.stylesheetBuilder.style("box-shadow", value);
+        } else if (blurRadius) {
+            const value = `${offsetX} ${offsetY} ${blurRadius} ${color}`;
+            this.stylesheetBuilder.style("box-shadow", value);
+        } else {
+            const value = `${offsetX} ${offsetY} ${color}`;
+            this.stylesheetBuilder.style("box-shadow", value);
+        }
         return this;
     }
 
     /**
-     * @param {String} property
-     * @param {String} duration
-     * @param {String} timingFunction
+     * @param {...String[]} transitions E.g. ["transform", ".3s", null, "ease-in-out"], ["opacity", ".2s"]
      * @returns {Css3StylesheetBuilder}
      */
-    transition(property, duration, timingFunction) {
-        const value = `${property} ${duration} ${timingFunction}`;
-        this.stylesheetBuilder.style("transition", value);
+    transition(...transitions) {
+        const transitionValues = transitions.map(transition => {
+            const [property, duration, delay, timingFunction] = transition;
+            let value = `${property} ${duration}`;
+            if (timingFunction) {
+                value += ` ${timingFunction}`;
+            }
+            if (delay) {
+                value += ` ${delay}`;
+            }
+            return value;
+        });
+        this.stylesheetBuilder.style("transition", transitionValues.join(", "));
         return this;
     }
 

@@ -459,15 +459,6 @@ export class Css3StylesheetBuilder {
     }
 
     /**
-     * @param {String} opacity E.g. "0", "0.5", "1"
-     * @returns {Css3StylesheetBuilder}
-     */
-    opacity(opacity) {
-        this.stylesheetBuilder.style("opacity", opacity);
-        return this;
-    }
-
-    /**
      * @param {String} backgroundPosition
      * @returns {Css3StylesheetBuilder}
      */
@@ -491,6 +482,42 @@ export class Css3StylesheetBuilder {
      */
     backgroundClip(backgroundClip) {
         this.stylesheetBuilder.style("background-clip", backgroundClip);
+        return this;
+    }
+
+    /**
+     * @param {String} backgroundImage E.g. "url(image.png)", "none"
+     * @returns {Css3StylesheetBuilder}
+     */
+    backgroundImage(backgroundImage) {
+        this.stylesheetBuilder.style("background-image", backgroundImage);
+        return this;
+    }
+
+    /**
+     * @param {String} backgroundRepeat E.g. "repeat", "no-repeat", "repeat-x", "repeat-y", "space", "round"
+     * @returns {Css3StylesheetBuilder}
+     */
+    backgroundRepeat(backgroundRepeat) {
+        this.stylesheetBuilder.style("background-repeat", backgroundRepeat);
+        return this;
+    }
+
+    /**
+     * @param {String} appearance E.g. "none", "auto", "button", "textfield", "menulist", "searchfield"
+     * @returns {Css3StylesheetBuilder}
+     */
+    appearance(appearance) {
+        this.stylesheetBuilder.style("appearance", appearance);
+        return this;
+    }
+
+    /**
+     * @param {String} opacity E.g. "0", "0.5", "1"
+     * @returns {Css3StylesheetBuilder}
+     */
+    opacity(opacity) {
+        this.stylesheetBuilder.style("opacity", opacity);
         return this;
     }
 

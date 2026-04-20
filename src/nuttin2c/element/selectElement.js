@@ -3,6 +3,9 @@
 import { XmlElement } from "xmlparser_v1";
 import { BaseElement } from "./baseElement.js";
 import { OptionElement } from "./optionElement.js";
+import { Logger } from "coreutil_v1";
+
+const LOG = new Logger("InputElementDataBinding");
 
 export class SelectElement extends BaseElement {
 	/**
@@ -40,7 +43,11 @@ export class SelectElement extends BaseElement {
             this.containerElement.removeChild(this.containerElement.firstChild);
         }
         for (const option of this.optionsArray){
-            this.containerElement.appendChild(option.containerElement);
+            // Replace with containerbridge
+            const containerOption = document.createElement("option");
+            containerOption.value = option.value;
+            containerOption.textContent = option.label;
+            this.containerElement.appendChild(containerOption);
         }
     }
 
@@ -67,6 +74,29 @@ export class SelectElement extends BaseElement {
      */
     get value(){
         return this.backingValue;
+    }
+
+    /**
+     * Returns the value given any processing rules
+     */
+    set value(value){
+        const found = false;
+
+        // Replace with containerbridge
+        /** @type {HTMLSelectElement} */
+        const containerElement = this.containerElement.element;
+
+        for (const /** @type {HTMLOptionElement} */ option of containerElement.options) {
+            if (option.value === value) {
+                found = true;
+                option.selected = true;
+            } else {
+                option.selected = false;
+            }
+        }
+        if (!found) {
+            LOG.warn("Value '" + value + "' not found in options for select element with name '" + this.name + "'.");
+        }
     }
 
     /**

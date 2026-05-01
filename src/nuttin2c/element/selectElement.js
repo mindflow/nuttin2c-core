@@ -80,7 +80,7 @@ export class SelectElement extends BaseElement {
      * Returns the value given any processing rules
      */
     set value(value){
-        const found = false;
+        let found = false;
 
         // Replace with containerbridge
         /** @type {HTMLSelectElement} */
@@ -93,6 +93,9 @@ export class SelectElement extends BaseElement {
             } else {
                 option.selected = false;
             }
+        }
+        if (found) {
+            this.containerElement.dispatchEvent('change');
         }
         if (!found) {
             LOG.warn("Value '" + value + "' not found in options for select element with name '" + this.name + "'.");

@@ -4,6 +4,7 @@ import { XmlElement } from "xmlparser_v1";
 import { BaseElement } from "./baseElement.js";
 import { OptionElement } from "./optionElement.js";
 import { Logger } from "coreutil_v1";
+import { HTML } from "../html/html.js";
 
 const LOG = new Logger("InputElementDataBinding");
 
@@ -44,10 +45,10 @@ export class SelectElement extends BaseElement {
         }
         for (const option of this.optionsArray){
             // Replace with containerbridge
-            const containerOption = document.createElement("option");
-            containerOption.value = option.value;
-            containerOption.textContent = option.label;
-            this.containerElement.appendChild(containerOption);
+            const optionElement = HTML.customChild("option", this);
+            optionElement.value = option.value;
+            optionElement.label = option.label;
+            this.containerElement.appendChild(optionElement.containerElement);
         }
     }
 
@@ -80,24 +81,10 @@ export class SelectElement extends BaseElement {
      * Returns the value given any processing rules
      */
     set value(value){
-        let found = false;
-
-        // Replace with containerbridge
-        /** @type {HTMLSelectElement} */
-        const containerElement = this.containerElement.element;
-
-        for (const /** @type {HTMLOptionElement} */ option of containerElement.options) {
-            if (option.value === value) {
-                found = true;
-                option.selected = true;
-            } else {
-                option.selected = false;
-            }
-        }
-        if (found) {
+        this.containerElement.value = value;
+        if (this.containerElement.value === value) {
             this.containerElement.dispatchEvent('change');
-        }
-        if (!found) {
+        } else {
             LOG.warn("Value '" + value + "' not found in options for select element with name '" + this.name + "'.");
         }
     }

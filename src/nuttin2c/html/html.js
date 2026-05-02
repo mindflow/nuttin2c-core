@@ -21,6 +21,22 @@ export class HTML{
         return ElementMapper.map(xmlElement);
     }
 
+    /**
+     * 
+     * @param {String} elementName 
+     * @param {Map<String, String>} attributeMap 
+     * @returns 
+     */
+    static customChild(elementName, parent, attributeMap = null){
+        const xmlElement = new XmlElement(elementName);
+        if (attributeMap) {
+            attributeMap.forEach((value, key) => {
+                xmlElement.setAttribute(key, new XmlAttribute(key, null, value));
+            });
+        }
+        return ElementMapper.map(xmlElement, parent);
+    }
+
     static applyStyles(element, classValue, styleValue){
         if(classValue){
             element.setAttributeValue("class", classValue);

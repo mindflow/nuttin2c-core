@@ -84,7 +84,7 @@ export class SelectElement extends BaseElement {
         this.containerElement.value = value;
         if (this.containerElement.value === value) {
             this.containerElement.dispatchEvent('change');
-        } else {
+        } else if (value !== null && value !== undefined) {
             LOG.warn("Value '" + value + "' not found in options for select element with name '" + this.name + "'.");
         }
     }

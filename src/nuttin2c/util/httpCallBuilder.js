@@ -231,6 +231,7 @@ export class HttpCallBuilder {
             throw this.errorMappingFunction(responseJson);
         } catch(error) {
             // Response did not provide json
+            LOG.error("Error parsing response json", error);
             throw this.errorMappingFunction(error);
         }
     }

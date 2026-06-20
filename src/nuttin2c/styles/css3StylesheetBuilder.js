@@ -212,6 +212,16 @@ export class Css3StylesheetBuilder {
         return this;
     }
 
+    verticalAlign(verticalAlign) {
+        this.stylesheetBuilder.style("vertical-align", verticalAlign);
+        return this;
+    }
+
+    userSelect(userSelect) {
+        this.stylesheetBuilder.style("user-select", userSelect);
+        return this;
+    }
+
     /**
      * @param {String} grow 
      * Grows relative to the other flex items in the container when there is extra space.

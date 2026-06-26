@@ -624,6 +624,11 @@ export class Css3StylesheetBuilder {
         return this;
     }
 
+    transformOrigin(transformOrigin) {
+        this.stylesheetBuilder.style("transform-origin", transformOrigin);
+        return this;
+    }
+
     build() {
         if (this.stylesheetBuilder.context !== null) {
             this.stylesheetBuilder.close(); 

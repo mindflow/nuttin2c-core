@@ -261,6 +261,11 @@ export class Css3StylesheetBuilder {
         return this;
     }
 
+    gap(gap) {
+        this.stylesheetBuilder.style("gap", gap);
+        return this;
+    }
+
     /**
      * @param {String} columns
      * @returns {Css3StylesheetBuilder}

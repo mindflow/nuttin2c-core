@@ -34,8 +34,27 @@ export class EventManager {
 
     /**
      * 
+     * @param {string} sourceEventType 
+     * @param {EventManager} destinationEventManager 
+     * @param {string} destinationEventType 
+     * @param {Boolean} logging
+     * @returns {EventManager}
+     */
+    route(sourceEventType, destinationEventManager, destinationEventType, logging = false) {
+        this.listenTo(sourceEventType, (parameter) => {
+            if (logging) {
+                LOG.info(`Routing event ${sourceEventType} to ${destinationEventType}`);
+            }
+            destinationEventManager.trigger(destinationEventType, parameter);
+        }, this);
+        return this;
+    }
+
+    /**
+     * 
      * @param {string} eventType 
      * @param {Array|any} parameter 
+     * @returns {Promise<Array>}
      */
     async trigger(eventType, parameter) {
         if (!eventType) {

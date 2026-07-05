@@ -7,7 +7,6 @@ const LOG = new Logger("EventManager");
  */
 export class EventManager {
 
-
     /**
      * 
      */
@@ -23,8 +22,8 @@ export class EventManager {
      * @param {Object} contextObject
      * @returns {EventManager}
      */
-    listenTo(eventType, listenerFunction, contextObject) {
-        const listener = new Method(listenerFunction, contextObject);
+    listenTo(eventType, listenerFunction, contextObject, explodeArrayParams = true) {
+        const listener = new Method(listenerFunction, contextObject, explodeArrayParams);
         if (!this.listenerMap.contains(eventType)) {
             this.listenerMap.set(eventType, new List());
         }
@@ -37,21 +36,21 @@ export class EventManager {
      * @param {string} sourceEventType 
      * @param {EventManager} destinationEventManager 
      * @param {string} destinationEventType 
-     * @param {Boolean} logging
+     * @param {any} customParameter
      * @returns {EventManager}
      */
-    route(sourceEventType, destinationEventManager, destinationEventType, logging = false) {
-        this.listenTo(sourceEventType, (parameter) => {
-            if (logging) {
-                LOG.info(`Routing event ${sourceEventType} to ${destinationEventType}`);
+    route(sourceEventType, destinationEventManager, destinationEventType, customParameter = null) {
+        this.listenTo(sourceEventType, (defaultParameter) => {
+            const allParameters = Array.isArray(defaultParameter) ? defaultParameter : [defaultParameter];
+            if (customParameter !== null) {
+                allParameters.push(customParameter);
             }
-            destinationEventManager.trigger(destinationEventType, parameter);
-        }, this);
+            destinationEventManager.trigger(destinationEventType, allParameters);
+        }, this, false);
         return this;
     }
 
     /**
-     * 
      * @param {string} eventType 
      * @param {Array|any} parameter 
      * @returns {Promise<Array>}

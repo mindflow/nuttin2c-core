@@ -7,6 +7,13 @@ import { Method } from "coreutil_v1";
  */
 export class StateManager {
 
+    static NEW = "__NEW__";
+    static UPDATE = "__UPDATE__";
+    static DELETE = "__DELETE__";
+
+    static ANY = "__ANY__";
+    static DEFAULT = "__DEFAULT__";
+
     constructor() {
         /** @type {Map<String, T>} */
         this.domainMap = new Map();
@@ -29,17 +36,16 @@ export class StateManager {
      * @param {Method} errorListener
      */
     react(domainListener, errorListener = null) {
-        const anyKey = "__ANY__";
-        if (!this.domainListeners.has(anyKey)) {
-            this.domainListeners.set(anyKey, new Array());
+        if (!this.domainListeners.has(StateManager.ANY)) {
+            this.domainListeners.set(StateManager.ANY, new Array());
         }
-        this.domainListeners.get(anyKey).push(domainListener);
+        this.domainListeners.get(StateManager.ANY).push(domainListener);
 
         if (errorListener != null) {
-            if (!this.errorListeners.has(anyKey)) {
-                this.errorListeners.set(anyKey, new Array());
+            if (!this.errorListeners.has(StateManager.ANY)) {
+                this.errorListeners.set(StateManager.ANY, new Array());
             }
-            this.errorListeners.get(anyKey).push(errorListener);
+            this.errorListeners.get(StateManager.ANY).push(errorListener);
         }
     }
 
@@ -69,7 +75,7 @@ export class StateManager {
     /**
      * @param {Promise<T>} object
      */
-    async handle(objectPromise, key = "__DEFAULT__") {
+    async handle(objectPromise, key = StateManager.DEFAULT) {
         try {
             const object = await objectPromise;
             return await this.updateDomain(object, key);
@@ -79,26 +85,22 @@ export class StateManager {
         }
     }
 
-    async updateError(error, key = "__DEFAULT__") {
+    async updateError(error, key = StateManager.DEFAULT) {
         this.initialized = true;
         this.errorMap.set(key, error);
         this.signalErrorChange(error, key);
     }
 
-    /**
-     * Update the state
-     * 
-     * @param {any} object 
-     * @param {string} key 
-     * @param {T} object 
-     */
-    async updateDomain(object, key = "__DEFAULT__") {
+    async updateDomain(object, key = StateManager.DEFAULT) {
         if (Array.isArray(object)) {
             for (let i = 0; i < object.length; i++) {
                 object[i] = this.createProxy(object[i], key, this);
             }
         }
         object = this.createProxy(object, key, this);
+
+        let change = this.domainMap.has(key) ? StateManager.UPDATE : StateManager.NEW;
+
         this.domainMap.set(key, object);
         
         this.initialized = true;
@@ -106,11 +108,11 @@ export class StateManager {
             this.errorMap.delete(key);
             this.signalErrorChange(null, key);
         }
-        this.signalDomainChange(object, key);
+        this.signalDomainChange(object, key, change);
         return object;
     }
 
-    async delete(key = "__DEFAULT__") {
+    async delete(key = StateManager.DEFAULT) {
 
         this.domainMap.delete(key);
         this.domainListeners.delete(key);
@@ -120,15 +122,15 @@ export class StateManager {
 
         this.initialized = true;
 
-        this.signalDomainChange(null, key);
+        this.signalDomainChange(null, key, StateManager.DELETE);
     }
 
     async clear() {
         this.initialized = true;
         for (let key of this.domainMap.keys()) {
-            this.signalDomainChange(null, key);
+            this.signalDomainChange(null, key, StateManager.DELETE);
         }
-        this.signalDomainChange(null, "__ANY__");
+        this.signalDomainChange(null, StateManager.ANY, StateManager.DELETE);
 
         this.domainMap.clear();
         this.domainListeners.clear();
@@ -139,21 +141,31 @@ export class StateManager {
         this.initialized = false;
     }
 
-    signalDomainChange(object, key) {
+    /**
+     * Signals a domain change to all listeners for a specific key.
+     * @param {any} object - The object that has changed.
+     * @param {string} key - The key associated with the object.
+     * @param {string} change - The type of change (new, updated, deleted).
+     */
+    signalDomainChange(object, key, change) {
         if (this.domainListeners.has(key)) {
             for (let listener of this.domainListeners.get(key)) {
-                listener.call([object, key]);
+                listener.call([object, key, change]);
             }
         }
 
-        const anyKey = "__ANY__";
-        if (key != anyKey && this.domainListeners.has(anyKey)) {
-            for (let listener of this.domainListeners.get(anyKey)) {
-                listener.call([object, key]);
+        if (key != StateManager.ANY && this.domainListeners.has(StateManager.ANY)) {
+            for (let listener of this.domainListeners.get(StateManager.ANY)) {
+                listener.call([object, key, change]);
             }
         }
     }
 
+    /**
+     * Signals an error change to all listeners for a specific key.
+     * @param {any} error - The error that has occurred.
+     * @param {string} key - The key associated with the error.
+     */
     signalErrorChange(error, key) {
         if (this.errorListeners.has(key)) {
             for (let listener of this.errorListeners.get(key)) {
@@ -161,9 +173,8 @@ export class StateManager {
             }
         }
 
-        const anyKey = "__ANY__";
-        if (key != anyKey && this.errorListeners.has(anyKey)) {
-            for (let listener of this.errorListeners.get(anyKey)) {
+        if (key != StateManager.ANY && this.errorListeners.has(StateManager.ANY)) {
+            for (let listener of this.errorListeners.get(StateManager.ANY)) {
                 listener.call([error, key]);
             }
         }
@@ -171,12 +182,19 @@ export class StateManager {
 
     createProxy(object, key, stateManager) {
         return new Proxy(object, {
+            /**
+             * Signals a domain change when a property is set on the state managed object.
+             * @param {any} target 
+             * @param {string} prop 
+             * @param {any} value 
+             * @returns 
+             */
             set: (target, prop, value) => {
                 if (target[prop] === value) {
                     return true;
                 }
                 const success = (target[prop] = value);
-                stateManager.signalDomainChange(target, key);
+                stateManager.signalDomainChange(target, key, StateManager.UPDATE);
                 return success === value;
             }
         });

@@ -45,7 +45,7 @@ export class EventManager {
             if (customParameter !== null) {
                 allParameters.push(customParameter);
             }
-            destinationEventManager.trigger(destinationEventType, allParameters);
+            return destinationEventManager.trigger(destinationEventType, allParameters);
         }, this, false);
         return this;
     }

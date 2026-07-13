@@ -219,21 +219,33 @@ export class HttpCallBuilder {
             throw new Error("Missing mapper for return status: " + fetchResponse.status);
         }
 
-        // Assuming json response      
+        // Assuming json response
+        let successResponse = null;
+        let failResponse = null;      
         try {  
             const responseJson = await fetchResponse.json();
             if (successResponseMapper) { 
-                return successResponseMapper(responseJson);
+                successResponse = successResponseMapper(responseJson);
             }
-            if (failResponseMapper) {
-                throw failResponseMapper(responseJson);
+            if (null == successResponse && failResponseMapper) {
+                failResponse = failResponseMapper(responseJson);
             }
-            throw this.errorMappingFunction(responseJson);
+            if (null == successResponse && null == failResponse) {
+                failResponse = this.errorMappingFunction(responseJson);
+            }
         } catch(error) {
             // Response did not provide json
             LOG.error("Error parsing response json", error);
             throw this.errorMappingFunction(error);
         }
+
+        if (successResponse) {
+            return successResponse;
+        }
+        if (failResponse) {
+            throw failResponse;
+        }
+        throw new Error("Missing mapper for return status: " + fetchResponse.status);
     }
 
 }

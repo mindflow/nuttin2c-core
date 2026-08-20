@@ -30,7 +30,7 @@ export class InputElementDataBinding {
                 this.validator.validate(field.value);
             }
         };
-        field.listenTo("change", puller, this);
+        field.listenTo("input", puller, this);
         field.listenTo("keyup", puller, this);
 
         const pusher = () => {

@@ -641,4 +641,13 @@ export class Css3StylesheetBuilder {
         return this.stylesheetBuilder.build();
     }
 
+    rows(rows) {
+        this.stylesheetBuilder.style("rows", rows);
+        return this;
+    }
+
+    columns(columns) {
+        this.stylesheetBuilder.style("columns", columns);
+        return this;
+    }
 }

@@ -39,10 +39,10 @@ export class AbstractValidator {
     }
 
 	valid() {
+        this.currentlyValid = true;
         if (!this.enabled) {
             return;
         }
-        this.currentlyValid = true;
         if(!this.validListenerList) {
             LOG.warn("No validation listeners");
             return;
@@ -54,10 +54,10 @@ export class AbstractValidator {
 	}
 
 	invalid() {
+        this.currentlyValid = false;
         if (!this.enabled) {
             return;
         }
-        this.currentlyValid = false;
         if(!this.invalidListenerList) {
             LOG.warn("No invalidation listeners");
             return;

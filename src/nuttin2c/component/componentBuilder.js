@@ -51,8 +51,14 @@ export class ComponentBuilder {
 
         const attributeMap = new Map();
         attributeArray.forEach(attr => {
-           const [key, value] = attr.split("=");
-           attributeMap.set(key, value);
+            if (!attr.includes("=")) {
+                attributeMap.set(attr, "");
+                return;
+            }
+            let firstEqualSignIndex = attr.indexOf("=");
+            const key = attr.substring(0, firstEqualSignIndex);
+            const value = attr.substring(firstEqualSignIndex + 1);
+            attributeMap.set(key, value);
         });
 
         /** @type {BaseElement} */

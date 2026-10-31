@@ -8,12 +8,17 @@ import { StateChange } from "./stateChange";
  */
 export class StateManager {
 
-    static NEW = "__NEW__";
-    static UPDATE = "__UPDATE__";
-    static DELETE = "__DELETE__";
+    static CHANGE_NEW = "__CHANGE_NEW__";
+    static CHANGE_UPDATE = "__CHANGE_UPDATE__";
+    static CHANGE_DELETE = "__CHANGE_DELETE__";
 
-    static ANY = "__ANY__";
-    static DEFAULT = "__DEFAULT__";
+    static KEY_ANY = "__KEY_ANY__";
+    static KEY_DEFAULT = "__KEY_DEFAULT__";
+
+    static TRIGGER_CREATE = "__TRIGGER_CREATE__";
+    static TRIGGER_DELETE = "__TRIGGER_DELETE__";
+    static TRIGGER_UPDATE = "__TRIGGER_UPDATE__";
+    static TRIGGER_READ = "__TRIGGER_READ__";
 
     constructor() {
         /** @type {Map<String, T>} */
@@ -38,11 +43,11 @@ export class StateManager {
      * @param {Function} errorListener
      * @param {String} key
      */
-    react(context, domainListenerFunction, errorListenerFunction = null, key = StateManager.DEFAULT) {
+    react(context, domainListenerFunction, errorListenerFunction = null, key = StateManager.KEY_DEFAULT) {
 
         // If key is ANY, then we are passing an array, so the listener should expect an array of state changes rather than individual objects.
-        const domainListener = new Method(domainListenerFunction, context, key != StateManager.ANY);
-        const errorListener = errorListenerFunction ? new Method(errorListenerFunction, context, key != StateManager.ANY) : null;
+        const domainListener = new Method(domainListenerFunction, context, key != StateManager.KEY_ANY);
+        const errorListener = errorListenerFunction ? new Method(errorListenerFunction, context, key != StateManager.KEY_ANY) : null;
 
         if (!this.domainListeners.has(key)) {
             this.domainListeners.set(key, new Array());
@@ -61,7 +66,7 @@ export class StateManager {
         return Array.from(this.domainMap.values());
     }
 
-    async updateError(error, key = StateManager.DEFAULT) {
+    async updateError(error, key = StateManager.KEY_DEFAULT) {
         this.initialized = true;
         this.errorMap.set(key, error);
         this.signalErrorChange(error, key);
@@ -79,7 +84,7 @@ export class StateManager {
             const object = array[i];
             const propertyValue = object[property];
             const proxyObject = this.createProxy(object, propertyValue, this);
-            stateChangeArray.push(new StateChange(proxyObject, propertyValue, this.domainMap.has(propertyValue) ? StateManager.UPDATE : StateManager.NEW));
+            stateChangeArray.push(new StateChange(proxyObject, propertyValue, this.domainMap.has(propertyValue) ? StateManager.CHANGE_UPDATE : StateManager.CHANGE_NEW));
         }
 
         this.initialized = true;
@@ -104,7 +109,7 @@ export class StateManager {
         // Create proxies for each value in the map and collect their keys as update keys
         for (const [key, value] of map.entries()) {
             const proxyValue = this.createProxy(value, key, this);
-            stateChangeArray.push(new StateChange(proxyValue, key, this.domainMap.has(key) ? StateManager.UPDATE : StateManager.NEW));
+            stateChangeArray.push(new StateChange(proxyValue, key, this.domainMap.has(key) ? StateManager.CHANGE_UPDATE : StateManager.CHANGE_NEW));
         }
 
         this.initialized = true;
@@ -119,14 +124,14 @@ export class StateManager {
         this.signalDomainChange(stateChangeArray);
     }
 
-    async updateDomain(object, key = StateManager.DEFAULT) {
+    async updateDomain(object, key = StateManager.KEY_DEFAULT) {
         if (Array.isArray(object) || object instanceof Map ) {
             throw new Error("updateDomain expects a single object, not an array or map");
         }
 
         const proxyObject = this.createProxy(object, key, this);
 
-        let change = this.domainMap.has(key) ? StateManager.UPDATE : StateManager.NEW;
+        let change = this.domainMap.has(key) ? StateManager.CHANGE_UPDATE : StateManager.CHANGE_NEW;
 
         this.domainMap.set(key, proxyObject);
         
@@ -139,7 +144,7 @@ export class StateManager {
         return proxyObject;
     }
 
-    async delete(key = StateManager.DEFAULT) {
+    async delete(key = StateManager.KEY_DEFAULT) {
 
         this.domainMap.delete(key);
         this.errorMap.delete(key);
@@ -147,10 +152,10 @@ export class StateManager {
         this.initialized = true;
 
         if (this.domainMap.has(key)) {
-            this.signalDomainChange([new StateChange(this.domainMap.get(key), key, StateManager.DELETE)]);
+            this.signalDomainChange([new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE)]);
         }
 
-        if (StateManager.DEFAULT !== key) {
+        if (StateManager.KEY_DEFAULT !== key) {
             this.domainListeners.delete(key);
             this.errorListeners.delete(key);
         }
@@ -160,7 +165,7 @@ export class StateManager {
         this.initialized = true;
         const stateChangeArray = [];
         for (let key of this.domainMap.keys()) {
-            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.DELETE));
+            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE));
         }
         this.signalDomainChange(stateChangeArray);
 
@@ -177,19 +182,19 @@ export class StateManager {
         this.initialized = true;
         const stateChangeArray = [];
         for (let key of this.domainMap.keys()) {
-            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.DELETE));
+            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE));
         }
         this.signalDomainChange(stateChangeArray);
 
         this.domainMap.clear();
-        const anyKeyDomainListener = this.domainListeners.get(StateManager.ANY);
+        const anyKeyDomainListener = this.domainListeners.get(StateManager.KEY_ANY);
         this.domainListeners.clear();
-        this.domainListeners.set(StateManager.ANY, anyKeyDomainListener);
+        this.domainListeners.set(StateManager.KEY_ANY, anyKeyDomainListener);
 
         this.errorMap.clear();
-        const anyKeyErrorListeners = this.errorListeners.get(StateManager.ANY);
+        const anyKeyErrorListeners = this.errorListeners.get(StateManager.KEY_ANY);
         this.errorListeners.clear();
-        this.errorListeners.set(StateManager.ANY, anyKeyErrorListeners);
+        this.errorListeners.set(StateManager.KEY_ANY, anyKeyErrorListeners);
 
         this.initialized = false;
     }
@@ -203,7 +208,7 @@ export class StateManager {
         // Signal domain changes to all listeners for the specific key
         for (let stateChange of stateChangeArray) {
             const { object, key, change } = stateChange;
-            if (key != StateManager.DEFAULT && !this.domainListeners.has(key)) {
+            if (key != StateManager.KEY_DEFAULT && !this.domainListeners.has(key)) {
                 continue;
             }
             for (let listener of this.domainListeners.get(key)) {
@@ -211,12 +216,12 @@ export class StateManager {
             }
         }
 
-        if (!this.domainListeners.has(StateManager.ANY)) {
+        if (!this.domainListeners.has(StateManager.KEY_ANY)) {
             return;
         }
 
         // Signal domain changes to all listeners for any key, and finish with finalize for the collected changes
-        for (let listener of this.domainListeners.get(StateManager.ANY)) {
+        for (let listener of this.domainListeners.get(StateManager.KEY_ANY)) {
             // Pass the every state change to the listener for the ANY key
             listener.call(stateChangeArray);
         }
@@ -234,8 +239,8 @@ export class StateManager {
             }
         }
 
-        if (key != StateManager.ANY && this.errorListeners.has(StateManager.ANY)) {
-            for (let listener of this.errorListeners.get(StateManager.ANY)) {
+        if (key != StateManager.KEY_ANY && this.errorListeners.has(StateManager.KEY_ANY)) {
+            for (let listener of this.errorListeners.get(StateManager.KEY_ANY)) {
                 listener.call([error, key]);
             }
         }
@@ -255,7 +260,7 @@ export class StateManager {
                     return true;
                 }
                 const success = (target[prop] = value);
-                stateManager.signalDomainChange(target, key, StateManager.UPDATE);
+                stateManager.signalDomainChange(target, key, StateManager.CHANGE_UPDATE);
                 return success === value;
             }
         });

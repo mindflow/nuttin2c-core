@@ -8,6 +8,8 @@ import { StateChange } from "./stateChange";
  */
 export class StateManager {
 
+    static STATE_MANAGER_PROXY = Symbol('stateManagerProxy');
+
     /** A change was observed creating adding new domain object */
     static CHANGE_NEW = "__CHANGE_NEW__";
 
@@ -284,7 +286,17 @@ export class StateManager {
      * @returns 
      */
     createProxy(object, key, stateManager) {
+        if (object[StateManager.STATE_MANAGER_PROXY]) {
+            LOG.warn("Object is already a state manager proxy.");
+            return object;
+        }
         return new Proxy(object, {
+            get: (target, prop, receiver) => {
+                if (prop === StateManager.STATE_MANAGER_PROXY) {
+                    return true;
+                }
+                return Reflect.get(target, prop, receiver);
+            },
             /**
              * Signals a domain change when a property is set on the state managed object.
              * @param {any} target 

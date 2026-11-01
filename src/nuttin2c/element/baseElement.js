@@ -215,23 +215,23 @@ export class BaseElement extends MappedContainerElement {
             this.addChild(input);
         }
         if (input.containerElement !== undefined && input.containerElement !== null) {
-            this.containerElement.insertBefore(input.containerElement, this.containerElement.firstChild);
+            this.containerElement.prependChild(input.containerElement);
             return;
         }
         if (input && input.rootElement) {
-            this.containerElement.insertBefore(input.rootElement.containerElement, this.containerElement.firstChild);
+            this.containerElement.prependChild(input.rootElement.containerElement);
             return;
         }
         if (typeof input == "string") {
-            this.containerElement.insertBefore(ContainerElementUtils.createTextNode(input), this.containerElement.firstChild);
+            this.containerElement.prependChild(ContainerElementUtils.createTextNode(input));
             return;
         }
         if (input instanceof ContainerText) {
-            this.containerElement.insertBefore(input, this.containerElement.firstChild);
+            this.containerElement.prependChild(input);
             return;
         }
         if (input instanceof Element) {
-            this.containerElement.insertBefore(input, this.containerElement.firstChild);
+            this.containerElement.prependChild(input);
             return;
         }
         LOG.warn("No valid input to prepend the element");

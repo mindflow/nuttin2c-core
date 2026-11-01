@@ -8,16 +8,33 @@ import { StateChange } from "./stateChange";
  */
 export class StateManager {
 
+    /** A change was observed creating adding new domain object */
     static CHANGE_NEW = "__CHANGE_NEW__";
-    static CHANGE_UPDATE = "__CHANGE_UPDATE__";
-    static CHANGE_DELETE = "__CHANGE_DELETE__";
 
+    /** A change was observed updating an existing domain object */
+    static CHANGE_UPDATE = "__CHANGE_UPDATE__";
+
+    /** A change was observed removing an existing domain object */
+    static CHANGE_REMOVE = "__CHANGE_REMOVE__";
+
+
+    /** This key matches any key in the domain map */
     static KEY_ANY = "__KEY_ANY__";
+
+    /** The default key used when no specific key is provided */
     static KEY_DEFAULT = "__KEY_DEFAULT__";
 
+
+    /** A trigger to create an object or objects downstream, resulted in a domain change */
     static TRIGGER_CREATE = "__TRIGGER_CREATE__";
+
+    /** A trigger to delete an object or objects downstream, resulted in a domain change */
     static TRIGGER_DELETE = "__TRIGGER_DELETE__";
+
+    /** A trigger to update an object or objects downstream, resulted in a domain change */
     static TRIGGER_UPDATE = "__TRIGGER_UPDATE__";
+
+    /** A trigger to read an object or objects downstream, resulted in a domain change */
     static TRIGGER_READ = "__TRIGGER_READ__";
 
     constructor() {
@@ -46,7 +63,7 @@ export class StateManager {
     react(context, domainListenerFunction, errorListenerFunction = null, key = StateManager.KEY_DEFAULT) {
 
         // If key is ANY, then we are passing an array, so the listener should expect an array of state changes rather than individual objects.
-        const domainListener = new Method(domainListenerFunction, context, key != StateManager.KEY_ANY);
+        const domainListener = new Method(domainListenerFunction, context);
         const errorListener = errorListenerFunction ? new Method(errorListenerFunction, context, key != StateManager.KEY_ANY) : null;
 
         if (!this.domainListeners.has(key)) {
@@ -72,7 +89,7 @@ export class StateManager {
         this.signalErrorChange(error, key);
     }
 
-    async updateDomainByArray(array, property) {
+    async updateDomainByArray(array, property, trigger = StateManager.TRIGGER_READ) {
         if (!Array.isArray(array)) {
             throw new Error("updateDomainArray expects an array");
         }
@@ -99,7 +116,7 @@ export class StateManager {
         this.signalDomainChange(stateChangeArray);
     }
 
-    async updateDomainByMap(map) {
+    async updateDomainByMap(map, trigger = StateManager.TRIGGER_READ) {
         if (!(map instanceof Map)) {
             throw new Error("updateDomainByMap expects a Map");
         }
@@ -124,7 +141,14 @@ export class StateManager {
         this.signalDomainChange(stateChangeArray);
     }
 
-    async updateDomain(object, key = StateManager.KEY_DEFAULT) {
+    /**
+     * 
+     * @param {any} object the domain object to update
+     * @param {string} trigger the trigger type that caused the update
+     * @param {string} key the key associated with the domain object
+     * @returns {any} the proxied domain object after the update
+     */
+    async updateDomain(object, key = StateManager.KEY_DEFAULT, trigger = StateManager.TRIGGER_READ) {
         if (Array.isArray(object) || object instanceof Map ) {
             throw new Error("updateDomain expects a single object, not an array or map");
         }
@@ -140,11 +164,16 @@ export class StateManager {
             this.errorMap.delete(key);
             this.signalErrorChange(null, key);
         }
-        this.signalDomainChange([new StateChange(proxyObject, key, change)]);
+        this.signalDomainChange([new StateChange(proxyObject, key, change)], trigger);
         return proxyObject;
     }
 
-    async delete(key = StateManager.KEY_DEFAULT) {
+    /**
+     * 
+     * @param {string} trigger the trigger type that caused the deletion
+     * @param {string} key the key associated with the domain object to delete
+     */
+    async remove(key = StateManager.KEY_DEFAULT, trigger = StateManager.TRIGGER_DELETE) {
 
         this.domainMap.delete(key);
         this.errorMap.delete(key);
@@ -152,7 +181,7 @@ export class StateManager {
         this.initialized = true;
 
         if (this.domainMap.has(key)) {
-            this.signalDomainChange([new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE)]);
+            this.signalDomainChange([new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_REMOVE)], trigger);
         }
 
         if (StateManager.KEY_DEFAULT !== key) {
@@ -165,7 +194,7 @@ export class StateManager {
         this.initialized = true;
         const stateChangeArray = [];
         for (let key of this.domainMap.keys()) {
-            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE));
+            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_REMOVE), StateManager.TRIGGER_READ);
         }
         this.signalDomainChange(stateChangeArray);
 
@@ -182,7 +211,7 @@ export class StateManager {
         this.initialized = true;
         const stateChangeArray = [];
         for (let key of this.domainMap.keys()) {
-            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_DELETE));
+            stateChangeArray.push(new StateChange(this.domainMap.get(key), key, StateManager.CHANGE_REMOVE), StateManager.TRIGGER_READ);
         }
         this.signalDomainChange(stateChangeArray);
 
@@ -202,17 +231,18 @@ export class StateManager {
     /**
      * Signals a domain change to all listeners for a specific key.
      * @param {StateChange[]} stateChangeArray - An array of StateChange objects representing the changes.
+     * @param {string} trigger - The trigger that caused the domain change.
      */
-    signalDomainChange(stateChangeArray) {
+    signalDomainChange(stateChangeArray, trigger = StateManager.TRIGGER_READ) {
 
         // Signal domain changes to all listeners for the specific key
-        for (let stateChange of stateChangeArray) {
+        for (const stateChange of stateChangeArray) {
             const { object, key, change } = stateChange;
             if (key != StateManager.KEY_DEFAULT && !this.domainListeners.has(key)) {
                 continue;
             }
             for (let listener of this.domainListeners.get(key)) {
-                listener.call([object, key, change]);
+                listener.call([object, key, change, trigger]);
             }
         }
 
@@ -223,7 +253,7 @@ export class StateManager {
         // Signal domain changes to all listeners for any key, and finish with finalize for the collected changes
         for (let listener of this.domainListeners.get(StateManager.KEY_ANY)) {
             // Pass the every state change to the listener for the ANY key
-            listener.call(stateChangeArray);
+            listener.call([stateChangeArray, trigger]);
         }
     }
 
@@ -246,6 +276,13 @@ export class StateManager {
         }
     }
 
+    /**
+     * 
+     * @param {any} object 
+     * @param {string} key 
+     * @param {StateManager} stateManager 
+     * @returns 
+     */
     createProxy(object, key, stateManager) {
         return new Proxy(object, {
             /**
@@ -260,7 +297,8 @@ export class StateManager {
                     return true;
                 }
                 const success = (target[prop] = value);
-                stateManager.signalDomainChange(target, key, StateManager.CHANGE_UPDATE);
+                const stateChange = new StateChange(target, key, StateManager.CHANGE_UPDATE);
+                stateManager.signalDomainChange([stateChange], StateManager.TRIGGER_READ);
                 return success === value;
             }
         });

@@ -90,7 +90,9 @@ export class TrailProcessor {
             return response;
         }
 
+        let lastTrailNode = null;
         for (const trailNode of trailNodesPath) {
+            lastTrailNode = trailNode;
 
             if (trailNode.property) {
                 currentObject = currentObject[trailNode.property];
@@ -98,6 +100,9 @@ export class TrailProcessor {
             if (trailNode.waypoint) {
                 response = trailNode.waypoint.call(currentObject);
             }
+        }
+        if (lastTrailNode && lastTrailNode.destination) {
+            response = lastTrailNode.destination.call(currentObject);
         }
 
         return response;

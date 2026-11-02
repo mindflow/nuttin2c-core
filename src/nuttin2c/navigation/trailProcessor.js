@@ -39,8 +39,8 @@ export class TrailProcessor {
             if (!trailNode.trail) {
                 throw new Error("TrailProcessor.uiNavigate: TrailNode in path has no trail defined");
             }
-
-            currentTrail += trailNode.trail;
+            const trailLeaf = Array.isArray(trailNode.trail) ? trailNode.trail[trailNode.trail.length - 1] : trailNode.trail;
+            currentTrail += trailLeaf;
 
             if (trailNode.property && currentObject[trailNode.property]) {
                 currentObject = currentObject[trailNode.property];
@@ -154,7 +154,8 @@ export class TrailProcessor {
 
             let currentTrail = "";
             currentIteration.trailNodePath.forEach((node) => {
-                currentTrail += node.trail;
+                const trailLeaf = Array.isArray(node.trail) ? node.trail[node.trail.length - 1] : node.trail;
+                currentTrail += trailLeaf;
             });
 
             if (currentTrail === trail) {
